@@ -13,7 +13,7 @@ import Callbacks as cb
 T = 100
 R = True           # Resonator Flag
 
-T_CB = {'T' : T}
+T_CB = {'T' : T, 'R' : R}
 
 N = 7
 NUM_INTERACTIONS = int((N * (N - 1)) / 2)

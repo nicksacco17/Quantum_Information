@@ -2,8 +2,6 @@
 from PauliInteraction import PauliInteraction
 from Ising import Ising
 
-N = 7
-NUM_INTERACTIONS = int((N * (N - 1)) / 2)
 
 import qutip as qp
 import numpy as np
@@ -51,7 +49,7 @@ def create_mixed_magnetic_driver(num_qubits):
         if rij == 0:
             J[i] = -1
 
-    mixed_magnetic_H = Ising(num_qubits, J, h, XHAT)
+    mixed_magnetic_H = Ising(num_qubits, J, h, X_HAT)
 
     return mixed_magnetic_H
         
@@ -75,4 +73,5 @@ def create_resonator_driver(num_qubits, Jij, hi):
     '''
 
 if __name__ == "__main__":
-    main()
+    #main()
+    print("MAIN")

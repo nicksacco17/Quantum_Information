@@ -19,7 +19,7 @@ class CoefficientGenerator:
 
         self.m_coupling_coefs = np.random.uniform(low = self.m_lower_bound, high = self.m_upper_bound, size = self.m_num_Jij)
         self.m_fields_coefs = np.random.uniform(low = self.m_lower_bound, high = self.m_upper_bound, size = self.m_num_hi)
-        
+
         #self.m_Jij_coefs = np.random.randint(0, high = 10, size = 5)
     def printCoefficients(self):
         print(self.m_coupling_coefs)
@@ -32,7 +32,7 @@ class CoefficientGenerator:
         return self.m_coupling_coefs
 
     def get_field_coefs(self):
-        return self.m_field_coefs
+        return self.m_fields_coefs
 
 def main():
     

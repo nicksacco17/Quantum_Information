@@ -13,13 +13,8 @@ T = 100
 R = True           # Resonator Flag
 TIME_STEPS = 100
 QME_NUM_STEPS = 1e9
-T_CB = {'T' : T}
-QME_OPTIONS = qp.Options(nsteps=QME_NUM_STEPS)
-
-J = [0.450874, -1.368073, 0.194027, 0.383486, 1.940685, 1.258323, -0.812024, -0.206118, 0.066754, \
-    -0.878955, 1.156949, 1.032118, 0.201304, -0.770762, 0.116750, -0.851013, -0.974961, -0.392041, \
-    1.772177, -0.227679, 1.223752]
-h = [1.095761, -0.263176, -1.195265, -0.741288, -0.235239, -0.248207, -0.008947]
+T_CB = {'T' : T, 'R' : R}
+QME_OPTIONS = qp.Options(nsteps = QME_NUM_STEPS)
 
 class MasterEquation:
 
@@ -45,9 +40,12 @@ class MasterEquation:
 
     def solve(self):
         
-        t = np.linspace(0, self.m_evolution_time, 100)
-        self.m_evolved_state = qp.mesolve(self.time_dependent_H, self.m_start_state, t, c_ops = None, e_ops = None, options = QME_OPTIONS, args = T_CB)
-        self.m_states_t = self.m_evolved_state.states
+        try:
+            t = np.linspace(0, self.m_evolution_time, 100)
+            self.m_evolved_state = qp.mesolve(self.time_dependent_H, self.m_start_state, t, c_ops = None, e_ops = None, options = QME_OPTIONS, args = T_CB)
+            self.m_states_t = self.m_evolved_state.states
+        except:
+            print("COULD NOT COMPUTE!")
        
         #overlap = (qp.fidelity(self.m_start_state, self.m_states_t[-1]) ** 2)
         #print("OVERLAP = %f" % overlap)
