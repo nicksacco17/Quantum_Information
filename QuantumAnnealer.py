@@ -42,11 +42,51 @@ class QuantumAnnealer:
 
         self.current_ground_state_eigenvalues = np.ndarray(self.annealing_time + 1, dtype = float)
         self.current_ground_state_eigenkets = np.ndarray(self.annealing_time + 1, dtype = qp.Qobj)
+
+    def get_gnd_eigvals(self):
+        return self.current_ground_state_eigenvalues
+
+    def print(self):
+
+        print("********** QUANTUM ANNEALER **********")
+        print("START HAMILTONIAN: " + str(self.start_H.shape))
+        print("STOP HAMILTONIAN: " + str(self.stop_H.shape))
+        print("DRIVER HAMILTONIAN: " + str(self.driver_H.shape))
+        print("CURRENT HAMILTONIAN:" + str(self.current_H.shape))
+        print("ANNEALING TIME: %d" % self.annealing_time)
+        print("GND STATE EIG VAL: " + str(len(self.current_ground_state_eigenvalues)))
+        print("GND STATE EIG KET: " + str(len(self.current_ground_state_eigenkets)))
+        if self.current_H == self.stop_H:
+            print("FINAL STATE REACHED!")
        
+    def par_evolve_cb(self, t):
+       
+        temp = (cb.start_H_time_coeff_cb(t, T_CB) * self.start_H) + \
+                (cb.driver_H_time_coeff_cb(t, T_CB) * self.driver_H) + \
+                (cb.stop_H_time_coeff_cb(t, T_CB) * self.stop_H)
+        
+        temp_eigval, temp_eigket = temp.eigenstates()
+        #self.current_eigenvalues[t] = temp_eigval
+        #self.current_ground_state_eigenvalues[t] = temp_eigval[0]
+        #print(self.current_ground_state_eigenvalues[t])
+        #print(self.current_ground_state_eigenvalues[t])
+        #print(self.current_ground_state_eigenvalues)
+
+        #self.current_eigenkets[t] = temp_eigket
+        #self.current_ground_state_eigenkets[t] = temp_eigket[0]
+
+        #print(temp_eigval[0])
+        return temp_eigval[0], temp_eigket[0]
+        #print("GROUND STATE EIGENVALUE[%d] = %d" % (t, self.current_ground_state_eigenvalues[t]))
 
     def evolve(self):
 
+        #self.current_ground_state_eigenvalues, self.current_ground_state_eigenkets = qp.parfor(self.par_evolve_cb, range(0, self.annealing_time + 1))
+
+        #print(self.current_ground_state_eigenvalues)
+
         # Need to go [0, T] inclusive - continuous time evolution not discrete
+        
         for t in range(self.annealing_time + 1):
           
             # Evolving correctly now
@@ -54,10 +94,24 @@ class QuantumAnnealer:
                             (cb.driver_H_time_coeff_cb(t, T_CB) * self.driver_H) + \
                             (cb.stop_H_time_coeff_cb(t, T_CB) * self.stop_H)
             self.measure(t)
-                       
+        
+        
+        #print(self.current_ground_state_eigenvalues)
+                    
     def measure(self, time_index):
         
         temp_eigval, temp_eigket = self.current_H.eigenstates()
+        self.current_eigenvalues[time_index] = temp_eigval
+        self.current_ground_state_eigenvalues[time_index] = temp_eigval[0]
+
+        self.current_eigenkets[time_index] = temp_eigket
+        self.current_ground_state_eigenkets[time_index] = temp_eigket[0]
+
+        #print("GROUND STATE EIGENVALUE[%d] = %d" % (time_index, self.current_ground_state_eigenvalues[time_index]))
+
+    def par_measure(self, temp, time_index):
+        
+        temp_eigval, temp_eigket = temp.eigenstates()
         self.current_eigenvalues[time_index] = temp_eigval
         self.current_ground_state_eigenvalues[time_index] = temp_eigval[0]
 

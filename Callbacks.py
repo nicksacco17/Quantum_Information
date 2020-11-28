@@ -26,8 +26,6 @@ def driver_H_time_coeff_cb(t, T_CB):
     else:
         return ((t / T) * (1.0 - (t / T)))
     
-        
-
 def resonator_H_time_coef_cb(t, T_CB):
     
     alpha0 = 2

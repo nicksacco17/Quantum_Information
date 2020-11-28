@@ -16,6 +16,8 @@ from QuantumAnnealer import QuantumAnnealer
 
 import qutip as qp
 import numpy as np
+import matplotlib.pyplot as plt
+import time as time
 
 X_HAT = "X"
 Y_HAT = "Y"
@@ -24,17 +26,20 @@ Z_HAT = "Z"
 N = 7
 T = 100
 NUM_INTERACTIONS = int((N * (N - 1)) / 2)
-DRIVER_FLAG = True
-DISPLAY_FLAG = True
+DISPLAY_FLAG = False
 
-def test(gen_rand_coef, iteration):
+def test(gen_rand_coef, iteration, driver_flag):
 
 #---------------------------- STEP 1: COEFFICIENTS -----------------------------
 
+
+    print("ITERATION = %d\n" % iteration)
+    start_time = time.time()
+
     if gen_rand_coef:
 
-        ising_coefficients = CoefficientGenerator(-3.0, 3.0, NUM_INTERACTIONS, N)
-        ising_coefficients.generateCoefficients()
+        ising_coefficients = CoefficientGenerator(NUM_INTERACTIONS, N)
+        ising_coefficients.generateCoefficients_gaussian(0.0, 1.0)
         J = ising_coefficients.get_coupling_coefs()
         h = ising_coefficients.get_field_coefs()
     
@@ -53,14 +58,19 @@ def test(gen_rand_coef, iteration):
     for i in range(N):
         H_START += basic_network.get_ztensor(i)
 
-    if DRIVER_FLAG:
+    if driver_flag:
         H_DRIVE = Driver_H.create_resonator_driver(N, J, h)
-    elif not DRIVER_FLAG:
+    elif not driver_flag:
+
+        J = np.zeros(NUM_INTERACTIONS, dtype = int)
+        h = np.zeros(N, dtype = int)
+        H_DRIVE = Ising(N, J, h, Z_HAT)
         H_DRIVE = qp.qzero(2)
         for i in range(N - 1):
             H_DRIVE = qp.tensor(H_DRIVE, qp.qzero(2))
     
     H_PROB = Ising(N, J, h, X_HAT)
+
 
 #-------------------------------------------------------------------------------
 
@@ -94,21 +104,35 @@ def test(gen_rand_coef, iteration):
 #--------------------- STEP 5: ADIABATIC EVOLUTION ROUTINE ---------------------
 
     computer = QuantumAnnealer(H_START, H_PROB.my_Hamiltonian, H_DRIVE.my_Hamiltonian, T)
+    
     computer.evolve()
+    #computer.print()
+
+    #print(computer.get_gnd_eigvals())
 
 #-------------------------------------------------------------------------------
+
 
 #----------------------------- STEP 6: COMPARISON ------------------------------
 
     comparator = Evaluator(computer.current_ground_state_eigenkets, qme_solver.m_states_t, T, PSI_GND_f)
-    print("<----- ITERATION %d ----->" % iteration)
-    comparator.evaluate()
+    comparator.evaluate(iteration)
    
 #-------------------------------------------------------------------------------
 
-#---------------------------- STEP 7: VISUALIZATION ----------------------------
+#-------------------------------- STEP 7: LOGGER -------------------------------
 
-    if DISPLAY_FLAG:
-        comparator.display()
+    #logger = DataLogger(computer.current_ground_state_eigenkets, qme_solver.m_states, T, PSI_GND_f)
+    #logger.solve()
+
+#---------------------------- STEP 8: VISUALIZATION ----------------------------
+
+    #if DISPLAY_FLAG:
+    #    comparator.display()
 
 #-------------------------------------------------------------------------------
+    stop_time = time.time()
+
+    total_time = stop_time - start_time
+    print("TOTAL TIME = %f sec\n" % total_time )
+
